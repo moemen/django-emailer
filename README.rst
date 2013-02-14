@@ -71,7 +71,7 @@ Or you can use pip and install from the github repository
 
 ::
 
-    pip install -e git+git://github.com/whelmingbytes/django-emailer.git#egg=django-emailer
+    pip install -e git+git://github.com/moemen/django-emailer.git#egg=django-emailer
 
 Setup
 ======
@@ -163,3 +163,4 @@ will grab the next 50 emails and send them:
     python manage.py process_emails
 
 To send emails on schedule, just set this up on a cronjob or similar tool.
+
