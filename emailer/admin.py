@@ -7,10 +7,23 @@ except:
     from django.forms import Textarea as HtmlWidget
     
 from emailer.models import *
-     
+# from emailer.models.Email import STATUS_PREPARED, STATUS_SENT, STATUS_ERROR
+
+def send_email(modeladmin, request, queryset):
+    not_sent = list(queryset.filter(status = Email.STATUS_PREPARED))
+    sent = list(queryset.filter(status=Email.STATUS_SENT))
+    for email in not_sent:
+        email.send()
+    sent_num = queryset.filter(status = Email.STATUS_SENT).count() - len(sent)
+    selected = queryset.all().count()
+    if not_sent:
+        messages.add_message(request, messages.SUCCESS, '%d have been sent from %d selected email.' % (sent_num, selected))
+
 class EmailAdmin(admin.ModelAdmin):
     list_display = ('email_blast', 'to_address', 'status', 'opened', 'merge_data',)
     list_filter = ('status',)
+
+    actions = [send_email]
 
 def prepare_blast(modeladmin, request, queryset):
     not_prepared = list(queryset.filter(is_prepared=False))
@@ -52,6 +65,12 @@ class EmailBlastAdmin(admin.ModelAdmin):
 ##            'fields': ('enable_comments', 'registration_required', 'template_name')
 #        }),
         )
+
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        form.save_m2m()
+        if not obj.is_prepared:
+            obj.send(   )
     
 class EmailTemplateAdminForm(forms.ModelForm):
     name = forms.CharField()
