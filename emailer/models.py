@@ -8,7 +8,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import Context, Template
 from django.conf import settings
 from django.contrib.sites.models import Site
-
+from django.utils.timezone import now
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^emailer\.fields\.DictionaryField"])
 
@@ -204,7 +204,7 @@ class EmailBlast(DefaultModel):
         if not self.is_prepared:
             self._prepare_for_send()
 
-        if not just_prepare or not datetime.datetime.now() > self.send_after:
+        if not just_prepare or not now() > self.send_after:
             for email in Email.objects.filter(email_blast=self):
                 email.send()
 
@@ -309,7 +309,7 @@ class Email(DefaultModel):
         be sent. This will be a silent failure. You should not call this
         method directly, it should be called by a blast or a processor.
         '''
-        if datetime.datetime.now() > self.email_blast.send_after:
+        if now() > self.email_blast.send_after:
             if self.status != Email.STATUS_PREPARED:
                 raise IncorrectEmailStatus("Email is not in status of prepared, something bad must have happened!")
 
