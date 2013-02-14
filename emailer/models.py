@@ -291,7 +291,8 @@ class Email(DefaultModel):
         fixed_html = self._prepare_html()
         
         text_content = html2text(fixed_html)
-        html_content = self._add_tracking_info(fixed_html)
+        # html_content = self._add_tracking_info(fixed_html) # I think it's not ethic!
+        html_content = fixed_html
         
         msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
         msg.attach_alternative(html_content, "text/html")
