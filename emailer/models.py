@@ -118,15 +118,11 @@ class EmailList(DefaultModel):
                 users += self._get_user_objs(group.user_set.all())
                 
             return users
-        
-#        elif self.type in (EmailList.LISTTYPE_QUERY_CUSTOM_SQL,):
-#            cursor = connection.cursor()
-#            cursor.execute(self.data_query_sql)
-#            rows = cursor.fetchall()
-#            objs = []
-#            for row in rows:#not good
-#                objs.append(EmailList.RawEmail(row[0]))
-#            return objs
+        elif self.type in (EmailList.LISTTYPE_QUERY_CUSTOM_SQL,):
+           cursor = connection.cursor()
+           cursor.execute(self.data_query_sql)
+           rows = cursor.fetchall()
+           return [EmailList.RawEmail(row[0]) for row in rows]        
         
         elif self.type in (EmailList.LISTTYPE_RAW_EMAILS,):
             return [EmailList.RawEmail(email.strip()) for email in self.data_raw_emails.split(',')]
