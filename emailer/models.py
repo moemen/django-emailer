@@ -210,7 +210,7 @@ class EmailBlast(DefaultModel):
 
         if not just_prepare or not now() > self.send_after:
             for email in Email.objects.filter(email_blast=self):
-                email.send.delay()
+                email.send.delay(email)
 
     def lists_str(self):
         lists = [list.name for list in self.lists.all()]
