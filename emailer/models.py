@@ -1,6 +1,7 @@
 import logging
 logger = logging.getLogger('emailer.models')
 
+from celery import task
 from django.db import models
 from django.contrib.auth.models import User, Group
 from django.db import connection
@@ -209,7 +210,7 @@ class EmailBlast(DefaultModel):
 
         if not just_prepare or not now() > self.send_after:
             for email in Email.objects.filter(email_blast=self):
-                email.send()
+                email.send.delay()
 
     def lists_str(self):
         lists = [list.name for list in self.lists.all()]
@@ -306,6 +307,7 @@ class Email(DefaultModel):
     
         return msg
 
+    @task
     def send(self):
         '''
         Actually send the email using django email. If the associated blasts
