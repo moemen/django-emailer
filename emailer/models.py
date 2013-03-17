@@ -15,6 +15,7 @@ add_introspection_rules([], ["^emailer\.fields\.DictionaryField"])
 
 from emailer.html2text import html2text
 from emailer.fields import DictionaryField
+from emailer.tasks import send_email
 
 import uuid, json, datetime
 
@@ -168,7 +169,8 @@ class EmailList(DefaultModel):
     def __unicode__(self):
         return str(self.name)
 
-class EmailBlast(DefaultModel):    
+
+class EmailBlast(DefaultModel):
     name = models.CharField(blank=False, unique=False, max_length=50)
     lists = models.ManyToManyField(EmailList)
 
@@ -210,7 +212,7 @@ class EmailBlast(DefaultModel):
 
         if not just_prepare or not now() > self.send_after:
             for email in Email.objects.filter(email_blast=self):
-                email.send.delay(email)
+                send_email.delay(email)
 
     def lists_str(self):
         lists = [list.name for list in self.lists.all()]
@@ -307,7 +309,6 @@ class Email(DefaultModel):
     
         return msg
 
-    @task
     def send(self):
         '''
         Actually send the email using django email. If the associated blasts
