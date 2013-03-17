@@ -181,6 +181,7 @@ class EmailBlast(DefaultModel):
         return str(self.name)
     
     def _prepare_for_send(self):
+        emails = []
         if not self.is_prepared:
             for list in self.lists.all():
                 for obj in list.get_objects():
@@ -189,7 +190,8 @@ class EmailBlast(DefaultModel):
                     email.to_address = obj.email
                     email.merge_data = obj.__dict__
                     email.status = Email.STATUS_PREPARED
-                    email.save()
+                    emails.append(email)
+            Email.objects.bulk_create(emails)
             self.is_prepared = True
             self.save()
                     
@@ -298,7 +300,7 @@ class Email(DefaultModel):
         msg.attach_alternative(html_content, "text/html")
     
         return msg
-    
+
     def send(self):
         '''
         Actually send the email using django email. If the associated blasts
