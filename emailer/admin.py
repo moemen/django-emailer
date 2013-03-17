@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django import forms
 
-from emailer.tasks import send_email
+from emailer.tasks import send_email as send_email_task
 
 try:
     from tinymce.widgets import TinyMCE as HtmlWidget
@@ -15,7 +15,7 @@ def send_email(modeladmin, request, queryset):
     not_sent = list(queryset.filter(status = Email.STATUS_PREPARED))
     sent = list(queryset.filter(status=Email.STATUS_SENT))
     for email in not_sent:
-        send_email.delay(email)
+        send_email_task.delay(email)
     sent_num = queryset.filter(status = Email.STATUS_SENT).count() - len(sent)
     selected = queryset.all().count()
     if not_sent:
