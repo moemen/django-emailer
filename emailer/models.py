@@ -87,17 +87,23 @@ class EmailList(DefaultModel):
         ordering = ['name']
 
     def _is_valid_field(self, field):
-        return not field == 'id' and not field.startswith('_')
+        return (not field == 'id') and (not field.startswith('_'))
     
     def _get_user_objs(self, users):
+        class TempUser(object):
+            pass
         try:
-            #try to include profile fields on User object            
+            #try to include profile fields on User object
+            tempusers = []
             for u in users:
+                t = TempUser.new()
                 for field,value in u.get_profile().__dict__.iteritems():
                     if self._is_valid_field(field):
-                        setattr(u, field, value)
-        except:
+                        setattr(t, field, value)
+                tempusers.append(t)
+        except Exception, e:
             logger.debug("No Auth Profile Defined")
+            
             #eat this if there is no profile defined in settings.py
             pass
         return users
@@ -105,7 +111,6 @@ class EmailList(DefaultModel):
     def get_objects(self):
        
         logger.debug("Getting objects for EmailList.type=%s", self.type)
-
         if self.type in (EmailList.LISTTYPE_SITEUSERS_USERDEFINED,):
             users = self._get_user_objs(self.data_site_users.all())
             return users
@@ -245,7 +250,7 @@ class Email(DefaultModel):
     status_message = models.TextField(blank=True, editable=False)
     opened = models.BooleanField(default=False, editable=False)
     
-    objects = EmailManager()
+    # objects = EmailManager()
     
     def _subject(self): return self.email_blast.subject
     subject = property(_subject)
