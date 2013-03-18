@@ -1,4 +1,5 @@
 import logging
+import datetime
 logger = logging.getLogger('emailer.models')
 
 from celery import task
@@ -211,8 +212,11 @@ class EmailBlast(DefaultModel):
             self._prepare_for_send()
 
         if not just_prepare or not now() > self.send_after:
+            counter = 1
             for email in Email.objects.filter(email_blast=self):
-                send_email.delay(email)
+                send_email.apply_async([email], eta=datetime.datetime.now() + 
+                                                    datetime.timedelta(seconds=counter))
+                counter += 2
 
     def lists_str(self):
         lists = [list.name for list in self.lists.all()]

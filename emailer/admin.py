@@ -14,8 +14,12 @@ from emailer.models import *
 def send_email(modeladmin, request, queryset):
     not_sent = list(queryset.filter(status = Email.STATUS_PREPARED))
     sent = list(queryset.filter(status=Email.STATUS_SENT))
+    counter = 1
     for email in not_sent:
-        send_email_task.delay(email)
+        send_email_task.apply_async([email], eta=datetime.datetime.now() + 
+                                                 datetime.timedelta(seconds=counter))
+        counter += 2
+
     sent_num = queryset.filter(status = Email.STATUS_SENT).count() - len(sent)
     selected = queryset.all().count()
     if not_sent:
