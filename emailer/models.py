@@ -1,4 +1,5 @@
 import logging
+import datetime
 logger = logging.getLogger('emailer.models')
 
 from django.db import models
@@ -13,6 +14,7 @@ add_introspection_rules([], ["^emailer\.fields\.DictionaryField"])
 
 from emailer.html2text import html2text
 from emailer.fields import DictionaryField
+from emailer.tasks import send_email
 
 from celery import task
 import redis
@@ -222,8 +224,11 @@ class EmailBlast(DefaultModel):
             self._prepare_for_send()
 
         if not just_prepare or not now() > self.send_after:
+            counter = 1
             for email in Email.objects.filter(email_blast=self):
-                email.send()
+                send_email.apply_async([email], eta=datetime.datetime.now() + 
+                                                    datetime.timedelta(seconds=counter))
+                counter += 2
 
     def lists_str(self):
         lists = [list.name for list in self.lists.all()]

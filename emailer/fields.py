@@ -21,6 +21,7 @@ class DictionaryField(models.Field):
         else:
             if not value:
                 return value
+
         return pickle.loads(str(value))
         
     def get_db_prep_save(self, value, connection):

@@ -1,6 +1,8 @@
 from django.contrib import admin, messages
 from django import forms
 
+from emailer.tasks import send_email as send_email_task
+
 try:
     from tinymce.widgets import TinyMCE as HtmlWidget
 except:
@@ -13,8 +15,12 @@ from emailer.models import *
 def send_email(modeladmin, request, queryset):
     not_sent = list(queryset.filter(status=Email.STATUS_PREPARED))
     sent = list(queryset.filter(status=Email.STATUS_SENT))
+    counter = 1
     for email in not_sent:
-        email.send()
+        send_email_task.apply_async([email], eta=datetime.datetime.now() +
+                                                 datetime.timedelta(seconds=counter))
+        counter += 2
+
     sent_num = queryset.filter(status=Email.STATUS_SENT).count() - len(sent)
     selected = queryset.all().count()
     if not_sent:
@@ -70,6 +76,13 @@ class EmailBlastAdmin(admin.ModelAdmin):
 ##            'fields': ('enable_comments', 'registration_required', 'template_name')
 #        }),
     )
+
+
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        form.save_m2m()
+        if not obj.is_prepared:
+            obj.send()
 
 
 class EmailTemplateAdminForm(forms.ModelForm):
