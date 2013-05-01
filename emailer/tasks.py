@@ -16,9 +16,8 @@ def _apply_merge_data(html, merge_data):
     return t.render(c)
 
 
-def _prepare_html(self):
-    html = _apply_merge_data(self.html, self.merge_data)
-    html = self._convert_relative_urls(html)
+def _prepare_html(html, merge_data):
+    html = _apply_merge_data(html, merge_data)
     return html
 
 
@@ -26,8 +25,10 @@ def _build_message(data):
     subject = data.get('subject')
     from_email = data.get('from_address')
     to = data.get('to_address')
+    html = data.get('content')
+    merge_data = data.get('merge_data')
 
-    fixed_html = _prepare_html()
+    fixed_html = _prepare_html(html, merge_data)
 
     text_content = html2text(fixed_html)
     html_content = fixed_html
@@ -43,7 +44,7 @@ def send_email():
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
     data = r.lpop('emails')
     while data:
-        data = json.loads(data.replace('\'', '\"').replace('u"', '"'))
+        data = json.loads(data)
         message = _build_message(data)
         try:
             message.send()

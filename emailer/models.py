@@ -1,5 +1,4 @@
 import logging
-import datetime
 logger = logging.getLogger('emailer.models')
 
 from django.db import models
@@ -14,9 +13,9 @@ add_introspection_rules([], ["^emailer\.fields\.DictionaryField"])
 
 from emailer.html2text import html2text
 from emailer.fields import DictionaryField
-from emailer.tasks import send_email
 
 from celery.contrib.methods import task
+from django.utils import simplejson as json
 import redis
 
 import uuid
@@ -197,6 +196,15 @@ class EmailBlast(DefaultModel):
     def __unicode__(self):
         return str(self.name)
 
+    def _extract_merge_data(self, user):
+        return {
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'is_active': user.is_active,
+            'email': user.email,
+        }
+
     @task
     def _prepare_for_send(self):
         if not self.is_prepared:
@@ -211,9 +219,10 @@ class EmailBlast(DefaultModel):
                         'subject': self.subject,
                         'content': self.html,
                         'email_blast': self.id,
+                        'merge_data': self._extract_merge_data(obj),
                         'status': Email.STATUS_PREPARED,
                     }
-                    pipe.rpush('emails', email)
+                    pipe.rpush('emails', json.dumps(email, ensure_ascii=False))
             pipe.execute()
             self.is_prepared = True
             self.save()
