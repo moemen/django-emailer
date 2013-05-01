@@ -77,7 +77,6 @@ class EmailBlastAdmin(admin.ModelAdmin):
 #        }),
     )
 
-
     def save_model(self, request, obj, form, change):
         obj.save()
         form.save_m2m()

@@ -16,7 +16,7 @@ from emailer.html2text import html2text
 from emailer.fields import DictionaryField
 from emailer.tasks import send_email
 
-from celery import task
+from celery.contrib.methods import task
 import redis
 
 import uuid
@@ -206,9 +206,11 @@ class EmailBlast(DefaultModel):
                 for obj in mail_list.get_objects():
 
                     email = {
-                        'email_blast': self.id,
                         'to_address': obj.email,
-                        'merge_data': obj.__dict__,
+                        'from_address': self.from_address,
+                        'subject': self.subject,
+                        'content': self.html,
+                        'email_blast': self.id,
                         'status': Email.STATUS_PREPARED,
                     }
                     pipe.rpush('emails', email)
@@ -221,14 +223,7 @@ class EmailBlast(DefaultModel):
         Sends an email for all objects in the assigned lists.
         '''
         if not self.is_prepared:
-            self._prepare_for_send()
-
-        if not just_prepare or not now() > self.send_after:
-            counter = 1
-            for email in Email.objects.filter(email_blast=self):
-                send_email.apply_async([email], eta=datetime.datetime.now() + 
-                                                    datetime.timedelta(seconds=counter))
-                counter += 2
+            self._prepare_for_send.delay()
 
     def lists_str(self):
         lists = [list.name for list in self.lists.all()]
