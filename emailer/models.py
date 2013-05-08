@@ -20,6 +20,7 @@ import redis
 
 import uuid
 
+EMAIL_QUEUE = 'emails'
 
 def make_uuid():
     return str(uuid.uuid4())
@@ -222,7 +223,7 @@ class EmailBlast(DefaultModel):
                         'merge_data': self._extract_merge_data(obj),
                         'status': Email.STATUS_PREPARED,
                     }
-                    pipe.rpush('emails', json.dumps(email, ensure_ascii=False))
+                    pipe.rpush(EMAIL_QUEUE, json.dumps(email, ensure_ascii=False))
             pipe.execute()
             self.is_prepared = True
             self.save()

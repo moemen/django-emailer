@@ -3,7 +3,7 @@ import redis
 from emailer.html2text import html2text
 from django.template import Context, Template
 from django.core.mail import EmailMultiAlternatives
-
+from models import EMAIL_QUEUE
 from django.utils import simplejson as json
 
 import logging
@@ -42,7 +42,7 @@ def _build_message(data):
 @task
 def send_email():
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
-    data = r.lpop('emails')
+    data = r.lpop(EMAIL_QUEUE)
     while data:
         data = json.loads(data)
         message = _build_message(data)
