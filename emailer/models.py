@@ -198,7 +198,7 @@ class EmailBlast(DefaultModel):
         return str(self.name)
 
     def _extract_merge_data(self, user):
-        if isinstance(user, User):
+        if not isinstance(user, User):
             return {'email': user.email}
         else:
             return {
