@@ -216,7 +216,6 @@ class EmailBlast(DefaultModel):
             pipe = r.pipeline()
             for mail_list in self.lists.all():
                 for obj in mail_list.get_objects():
-
                     email = {
                         'to_address': obj.email,
                         'from_address': self.from_address,

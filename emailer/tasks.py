@@ -5,6 +5,7 @@ from django.template import Context, Template
 from django.core.mail import EmailMultiAlternatives
 from models import EMAIL_QUEUE
 from django.utils import simplejson as json
+import time
 
 import logging
 logger = logging.getLogger('emailer.models')
@@ -48,10 +49,12 @@ def send_email():
         message = _build_message(data)
         try:
             message.send()
+            logger.debug('sent message to %s' % data['to_address'])
         except Exception:
             logger.debug(
-                'can not send the message to: %s bleast: %' % (
+                'can not send the message to: %s bleast: %s' % (
                     data['to_address'], data['email_blast']
                 )
             )
-        data = r.lpop('emails')
+        time.sleep(1)
+        data = r.lpop(EMAIL_QUEUE)
