@@ -52,7 +52,7 @@ def send_email():
             logger.debug('sent message to %s' % data['to_address'])
         except Exception:
             logger.debug(
-                'can not send the message to: %s bleast: %s' % (
+                'can not send the message to: %s, blast: %s' % (
                     data['to_address'], data['email_blast']
                 )
             )
