@@ -198,13 +198,16 @@ class EmailBlast(DefaultModel):
         return str(self.name)
 
     def _extract_merge_data(self, user):
-        return {
-            'username': user.username,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'is_active': user.is_active,
-            'email': user.email,
-        }
+        if isinstance(user, User):
+            return {'email': user.email}
+        else:
+            return {
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'is_active': user.is_active,
+                'email': user.email,
+            }
 
     @task
     def _prepare_for_send(self):
