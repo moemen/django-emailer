@@ -4,9 +4,9 @@ Created on Aug 20, 2013
 @author: amr
 '''
 from celery import chain
-from models import EMAIL_QUEUE
-from iterable import RedisList
-from tasks import send_email
+from emailer.models import EMAIL_QUEUE
+from emailer.iterable import RedisList
+from emailer.tasks import send_email
 
 
 def send_all():
