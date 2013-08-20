@@ -16,8 +16,23 @@ class RedisList(list):
         else:
             raise Exception('key does not exist')
 
+    def __iter__(self):
+        return self
+
     def __getitem__(self, index):
         return self.r.lindex(self.redis_key, index)
 
     def pop(self):
-        return self.r.rpop(self.redis_key)
+        return self.r.lpop(self.redis_key)
+
+    def next(self):
+        item = self.pop()
+        if item:
+            return item
+        else:
+            raise StopIteration
+
+
+
+
+

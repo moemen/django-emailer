@@ -56,10 +56,3 @@ def send_email(data):
             )
         )
     time.sleep(1)
-
-
-@task
-def delete_queue(key):
-    r = redis.Redis(connection_pool=REDIS_POOL)
-    return r.delete(key)
-    
