@@ -1,4 +1,5 @@
 import logging
+from settings import REDIS_POOL
 logger = logging.getLogger('emailer.models')
 
 from django.db import models
@@ -21,6 +22,7 @@ import redis
 import uuid
 
 EMAIL_QUEUE = 'emails'
+
 
 def make_uuid():
     return str(uuid.uuid4())
@@ -212,7 +214,7 @@ class EmailBlast(DefaultModel):
     @task
     def _prepare_for_send(self):
         if not self.is_prepared:
-            r = redis.StrictRedis(host='localhost', port=6379, db=0)
+            r = redis.Redis(connection_pool=REDIS_POOL)
             pipe = r.pipeline()
             for mail_list in self.lists.all():
                 for obj in mail_list.get_objects():

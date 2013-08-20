@@ -8,6 +8,8 @@ from django.utils import simplejson as json
 import time
 
 import logging
+from settings import REDIS_POOL
+from iterable import RedisList
 logger = logging.getLogger('emailer.models')
 
 
@@ -41,20 +43,23 @@ def _build_message(data):
 
 
 @task
-def send_email():
-    r = redis.StrictRedis(host='localhost', port=6379, db=0)
-    data = r.lpop(EMAIL_QUEUE)
-    while data:
-        data = json.loads(data)
-        message = _build_message(data)
-        try:
-            message.send()
-            logger.debug('sent message to %s' % data['to_address'])
-        except Exception:
-            logger.debug(
-                'can not send the message to: %s, blast: %s' % (
-                    data['to_address'], data['email_blast']
-                )
+def send_email(data):
+    data = json.loads(data)
+    message = _build_message(data)
+    try:
+        message.send()
+        logger.debug('sent message to %s' % data['to_address'])
+    except Exception:
+        logger.debug(
+            'can not send the message to: %s, blast: %s' % (
+                data['to_address'], data['email_blast']
             )
-        time.sleep(1)
-        data = r.lpop(EMAIL_QUEUE)
+        )
+    time.sleep(1)
+
+
+@task
+def delete_queue(key):
+    r = redis.Redis(connection_pool=REDIS_POOL)
+    return r.delete(key)
+    
