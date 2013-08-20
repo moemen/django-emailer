@@ -1,4 +1,4 @@
- '''
+'''
 Created on Aug 20, 2013
 
 @author: amr
@@ -6,7 +6,7 @@ Created on Aug 20, 2013
 from celery import chain
 from models import EMAIL_QUEUE
 from iterable import RedisList
-from tasks import send_email, delete_queue
+from tasks import send_email
 
 
 def send_all():
