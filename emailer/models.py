@@ -220,7 +220,7 @@ class EmailBlast(DefaultModel):
                 for obj in mail_list.get_objects():
                     email = {
                         'to_address': obj.email,
-                        'from_address': self.from_address,
+                        'from_address': 'Kotobme <{}>'.format(self.from_address),
                         'subject': self.subject,
                         'content': self.html,
                         'email_blast': self.id,
